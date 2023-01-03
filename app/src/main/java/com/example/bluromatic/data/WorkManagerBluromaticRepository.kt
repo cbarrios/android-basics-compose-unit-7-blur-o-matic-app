@@ -51,20 +51,37 @@ class WorkManagerBluromaticRepository(context: Context) : BluromaticRepository {
                 OneTimeWorkRequest.from(CleanupWorker::class.java)
             )
 
+        // Create blur constraints
+        val blurConstraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .build()
+
         // Create WorkRequest to blur the image
         val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
 
         // New code for input data object
         blurBuilder.setInputData(createInputDataForWorkRequest(blurLevel, imageUri))
 
+        // Set blurConstraints
+        blurBuilder.setConstraints(blurConstraints)
+
         // Start the work
         continuation = continuation.then(blurBuilder.build())
 
         // Add WorkRequest to save the image to the filesystem
         val save = OneTimeWorkRequestBuilder<SaveImageToFileWorker>()
-            .addTag(TAG_OUTPUT) // <- Add this
+            .addTag(TAG_OUTPUT)
+
+        // Create save constraints
+        val saveConstraints = Constraints.Builder()
+            .setRequiresStorageNotLow(true)
             .build()
-        continuation = continuation.then(save)
+
+        // Set saveConstraints
+        save.setConstraints(saveConstraints)
+
+        // Final work
+        continuation = continuation.then(save.build())
 
         // Start the work
         continuation.enqueue()
