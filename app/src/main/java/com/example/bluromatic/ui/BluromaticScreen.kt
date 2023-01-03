@@ -20,13 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
@@ -91,7 +85,9 @@ fun BluromaticScreenContent(
         BlurActions(
             blurUiState = blurUiState,
             onGoClick = { applyBlur(selectedValue) },
-            onSeeFileClick = {},
+            onSeeFileClick = { currentUri ->
+                showBlurredImage(context, currentUri)
+            },
             onCancelClick = { cancelWork() }
         )
     }
@@ -119,6 +115,10 @@ private fun BlurActions(
             }
             is BlurUiState.Complete -> {
                 Button(onGoClick) { Text(stringResource(R.string.go)) }
+                // Add a spacer and the new button with a "See File" label
+                Spacer(modifier = Modifier.width(8.dp))
+                Button({ onSeeFileClick(blurUiState.outputUri) })
+                { Text(stringResource(R.string.see_file)) }
             }
         }
     }
